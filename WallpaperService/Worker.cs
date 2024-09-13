@@ -38,7 +38,7 @@ public class Worker(
     /// Search pattern for matching filenames.
     /// </summary>
     private readonly string _searchPattern = configuration
-        .GetValue<string?>("SearchPattern") ?? "*";
+        .GetValue<string?>("Pattern") ?? "*";
 
     /// <summary>
     /// Whether to shuffle the list of files.
