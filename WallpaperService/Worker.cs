@@ -74,7 +74,7 @@ public class Worker(
                     break;
                 }
 
-                var index = Random.Shared.Next(0, files.Count);
+                var index = Random.Shared.Next(0, files.Count - 1);
 
                 logger.LogInformation(
                     "Setting {path} as wallpaper for monitor #{index} - {monitorId}",
