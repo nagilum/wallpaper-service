@@ -74,17 +74,26 @@ public class Worker(
                     break;
                 }
 
-                var index = Random.Shared.Next(0, files.Count - 1);
-
+                var file = files[0];
+                
                 logger.LogInformation(
-                    "Setting {path} as wallpaper for monitor #{index} - {monitorId}",
-                    files[index],
+                    "Setting {file} as wallpaper for monitor #{index} - {monitorId}",
+                    file,
                     monitorIndex,
                     id);
 
-                _engine.SetWallpaper(id, files[index]);
-
-                files.RemoveAt(index);
+                try
+                {
+                    _engine.SetWallpaper(id, file);
+                    files.RemoveAt(0);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error while setting {file} as wallpaper.",
+                        file);
+                }
             }
             
             logger.LogInformation(
@@ -105,26 +114,31 @@ public class Worker(
 
         foreach (var path in _paths!)
         {
-            logger.LogInformation(
-                "Getting {searchPattern} from {path} {recursively}",
-                _searchPattern,
-                path,
-                _searchOption is SearchOption.AllDirectories ? "recursively" : "not recursively");
+            var patterns = _searchPattern.Split(';');
+
+            foreach (var pattern in patterns)
+            {
+                logger.LogInformation(
+                    "Getting {searchPattern} from {path} {recursively}",
+                    pattern,
+                    path,
+                    _searchOption is SearchOption.AllDirectories ? "recursively" : "not recursively");
             
-            try
-            {
-                files.AddRange(
-                    Directory.GetFiles(
-                        path,
-                        _searchPattern,
-                        _searchOption));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(
-                    ex,
-                    "Error while getting files from {path}",
-                    path);
+                try
+                {
+                    files.AddRange(
+                        Directory.GetFiles(
+                            path,
+                            pattern,
+                            _searchOption));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Error while getting files from {path}",
+                        path);
+                }
             }
         }
         
@@ -149,17 +163,15 @@ public class Worker(
     /// <param name="list">List to shuffle.</param>
     private void Shuffle(ref List<string> list)
     {
+        var rng = new Random((int)DateTime.Now.Ticks);
         var n = list.Count;
 
         while (n > 1)
         {
             n--;
 
-            var k = Random.Shared.Next(n + 1);
-            var value = list[k];
-
-            list[k] = list[n];
-            list[n] = value;
+            var k = rng.Next(n + 1);
+            (list[k], list[n]) = (list[n], list[k]);
         }
     }
 }
