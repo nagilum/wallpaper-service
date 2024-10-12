@@ -75,6 +75,18 @@ public class Worker(
                 }
 
                 var file = files[0];
+
+                if (!File.Exists(file))
+                {
+                    files = this.GetFiles();
+
+                    if (files.Count is 0)
+                    {
+                        break;
+                    }
+
+                    file = files[0];
+                }
                 
                 logger.LogInformation(
                     "Setting {file} as wallpaper for monitor #{index} - {monitorId}",
